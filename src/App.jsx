@@ -207,7 +207,7 @@ import UseHousesHook from "../hooks/useHousesHook";
       returned values from the array are the current state (stories) 
       and the state updater function (setStories):
     */
-const initialHouses = 
+const initialStories = 
 [
     {
       "objectID": 1,
@@ -251,51 +251,84 @@ const initialHouses =
     }
   ];  
 
-    /* The following  is a custom hook that will store the state in a 
-     local storage. useStorageState which will keep the component's 
-     state in sync with the browser's local storage.
+ //  No need for this because we will fetch data directly using the API
+const getAsyncStories = () =>
+  new Promise((resolve) =>
+    setTimeout(
+      () => resolve({ data: { stories: initialStories } }),
+      2000
+    )
+  );  
 
-    This custom hook returns
-      1. state 
-      2. and a state updater function
-    and accepts an initial state as argument. 
+ 
+  const storiesReducer = (state, action) => {
+    switch (action.type) {
+      case 'STORIES_FETCH_INIT': //distinct type and payload 
+                                 //received by dispatchStories 
+                                 //dispatch function
+                                 //so we need to add it here
+        return {
+          ...state,              //return new state object with KV pairs
+                                 //via spread operator from current state object
+          isLoading: true,
+          isError: false,
+        };
+      case 'STORIES_FETCH_SUCCESS': //distinct type and payload 
+                                    //received by dispatchStories 
+                                    //dispatch function
+                                    //so we need to add it here
+        return {
+          ...state,
+          isLoading: false,
+          isError: false,
+          data: action.payload,
+        };
+      case 'STORIES_FETCH_FAILURE':   //another distinct type and payload 
+                                      //received by dispatchStories 
+                                      //dispatch function 
+                                      //so we need to add it here
+        return {
+          ...state,
+          isLoading: false,
+          isError: true,
+        };
+      case 'REMOVE_STORY':              //another distinct type and payload 
+                                        //received by dispatchStories 
+                                        //dispatch function
+                                        //so we need to add it here
+                                    //Observe how the REMOVE_STORY action 
+                                    //changed as well. It operates on the 
+                                    //state.data, and no longer just on the
+                                    // plain "state".
+        return {
+          ...state,
+          data: state.data.filter(  //now operate on state.data not just "state"
+            (story) => action.payload.objectID !== story.objectID
+          ),
+        };
+      default:
+        throw new Error();
+    }
+  };
+  
+  const useStorageState = (key, initialState) => {
 
-     This is the custom hook before it was refactored to make it generic:
-     const [searchTerm, setSearchTerm] = React.useState(''); 
-        1. searchTerm renamed to 'value'
-        2. setSearchTerm renamed to 'setValue'
-  */
-     const useStorageState = (key, initialState) => {
-          const [value, setValue] = React.useState(
-              localStorage.getItem('key') || initialState 
-          );
-          
-          React.useEffect(() => {
-            console.log('useEffect fired. Displaying value of dependency array ' + [ value, key]  );
-              localStorage.setItem(key, value);  
-              },
-              [value, key]   //Dependency array
-              ); //EOF useEffect
-          
-          //the returned values are returned as an array.
-          return [value, setValue]; 
-      
-      } //EOF create custom hook
+    const [value, setValue] = React.useState(
+        localStorage.getItem('key') || initialState 
+    );
     
-    /* Fetching data. We start off with a function that returns a 
-     promise with data in its shorthand version once it resolves. 
-     Even though the data should arrive asynchronously when we start the 
-     application, it appears to arrive synchronously, because it's rendered 
-     immediately. Let's change this by giving it a bit of a realistic delay.
-     When resolving the promise, delay it for 2 seconds:
-   */
-    const getAsyncHouses = () =>
-       new Promise((resolve) =>
-       setTimeout(
-         () => resolve({ data: { houses: initialHouses } }),
-       //  2000
-       )
-     );
+    React.useEffect(() => {
+      console.log('useEffect fired. Displaying value of dependency array ' + [ value, key]  );
+        localStorage.setItem(key, value);  
+        },
+        [value, key]   //Dependency array
+        ); //EOF useEffect
+    
+    //the returned values are returned as an array.
+    return [value, setValue]; 
+
+} //EOF create custom hook
+    
 
 const App = () => {
 
@@ -304,41 +337,12 @@ const App = () => {
      title: 'Houses for Sale',
    };
  
-  /* Call custom useStorageState hook to assign value to stateOfSearchComponent, 
-  setSearchTerm */
-  const [stateOfSearchComponent, setSearchTerm] =  useStorageState ( //<-- custom hook
+  
+  const [searchTerm, setSearchTerm] =  useStorageState ( //<-- custom hook
     'search', //key
-    '',  //Initial state
+    'React',  //Initial state
     );
 
-  /* Step 1: Steps in using React.useReducer:
-      First create a reducer function called housesReducer.
-  */
-  
-   const housesReducer = (state, action) => { //always receives a state 
-                                              //and action
-      switch (action.type){ //this is what it means by reducer function
-                            //specifies how should state change based
-                            //on the "action" passed by the reducerDispatch()
-        case 'GET_HOUSES':
-          const myGetHousesPayload = JSON.stringify(action.payload);
-          console.log("Get Houses Payload = " + myGetHousesPayload );
-          return action.payload; //specifies how should state change  
-
-        case 'DELETE_HOUSE':
-          return state.filter(
-            (house) => action.payload.objectID !== house.objectID //specifies how should state change 
-          );
-        case 'ADD_HOUSE':
-          return action.payload;   
-
-        default:
-           throw new Error();
-      }
-       //action is always associated 
-       //with a type and "payload".
-       
-      };
 
    // Step 2: In using REACT REDUCER:
    //First replace: const [houses, setHouses] = React.useState([]);
@@ -386,33 +390,66 @@ const App = () => {
     //         .catch(() => setIsError(true));
     //     }, []);  
     
-  const houses = UseHousesHook(housesReducer);
+  //data: [], isLoading, isError flags hooks merged into one 
+   //useReducer hook for a unified state.
+   const [stories, dispatchStories] = React.useReducer( //A
+   storiesReducer,
+   { data: [], isLoading: false, isError: false } //We want an empty list data [] 
+                                                  //for the initial state, set isloading=false
+                                                  //is error=false
+ );
 
- // const myHouses = JSON.stringify(houses);
+ //After merging the three useState hooks into one Reducer hook,
+  //we cannot use the state updater functions from React's 
+  //useState Hooks anymore like:
+  //     setIsLoading, setIsError
+  //everything related to asynchronous data fetching must now use 
+  //the new dispatch function "dispatchStories" see (A)
+  //for updating state transitions 
+  React.useEffect(() => {
+    //dispatchStories receiving different payload
+   dispatchStories({ type: 'STORIES_FETCH_INIT' }); //for init
+                    //dispatchStories receives STORIES_FETCH_INIT as type
 
-  //console.log("Houses returned by UseHousesHook= " + houses);
+   //First - API is used to fetch popular tech stories for a certain query 
+   //        (a search term). In this case  we fetch stories about 'react' (B)
 
-  const handleRemoveHouse = (item) => { 
-       // const newHouses = houses.filter(   <== MOVE THIS LOGIC TO  HouseReducer()
-       //  (house) => item.objectID !== house.objectID
-       // );
-      dispatchHouses({    //The second state transition that we need to handle is
-                          //the DELETE record. This replaced setHouses(newHouses);
-                          //Now add the TYPE and PAYLOAD and the business logic 
-                          //to the HouseReducer() function to cover this new case.
-        type: 'DELETE_HOUSE',
-        payload: item,
-      });
-    };
+   //Second - the native browser's fetch API (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+   //         to make this request.
+   //         For 'fetch' API, the response needs to be translated to JSON (C)
+   
+   //Finally - the returned result has a different data structure which we send
+   //          payload to our component's state reducer (dispatchStories)
+   getAsyncStories()
+      .then((result) => {
+        dispatchStories({
+          type: 'STORIES_FETCH_SUCCESS',
+          payload: result.data.stories,
+        });
+      })
+      .catch(() =>
+        dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+      );
+  }, []); 
+
+  const handleRemoveStory = (item) => {
+    dispatchStories({
+      type: 'REMOVE_STORY',
+      payload: item,
+    });
+  };
   
-  /*STEP 5:The third state transition we want to handle using  
-     dispatchHouses() reducer function is: 
-          handleAddHouse()  
-    It is another state transition because it deletes a record.
-   */
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  //by addressing the state as object and not as array anymore,
+  //note that it operates on the state.data no longer on the plain state.
+  const searchedStories = stories.data.filter((story) =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleAddHouse = (item) => { 
-
     dispatchHouses({
       type: 'ADD_HOUSE',  //TYPE
       payload: [...houses,      //contains the searchedHouses state
@@ -432,55 +469,96 @@ const App = () => {
     );
 
   }
-  const handleSearch = (event) => {
-      setSearchTerm(event.target.value); 
-   };
+   
+  return (
+    <div>
+      <h1>My Hacker Stories</h1>
 
-  //"houses" is the array of houses newly created by the filter() method.
-  const searchedHouses = houses.filter((house) =>
-      house.country.toLowerCase().includes(stateOfSearchComponent.toLowerCase())
-    );
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        isFocused
+        onInputChange={handleSearch}
+      >
+        <strong>Search:</strong>
+      </InputWithLabel>
 
-   //Introduce another state for displaying HouseDetail.
-   //I am not passing initial value that means selectedHouse 
-   //will be initially undefined.
-   const [selectedHouse, setSelectedHouse] = React.useState(); 
+      <hr />
 
-   //This wrapper is passed as props to HouseList instead of 
-   //setSelectedHouse. The advantage of this approach is that 
-   //the App component still retains and control its own state.
-   const setSelectedHouseWrapper = (house) => {
-     setSelectedHouse(house);
-   }
+      {stories.isError && <p>Something went wrong ...</p>}
+
+      {stories.isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List
+          list={searchedStories}
+          onRemoveItem={handleRemoveStory}
+        />
+      )}
+    </div>
+  );
+};
+
+ const InputWithLabel = ({
+  id,
+  value,
+  type = 'text',
+  onInputChange,
+  isFocused,
+  children,
+}) => {
+  const inputRef = React.useRef();
+
+  React.useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
 
   return (
     <>
-     <Header  headerText={welcome} />   
-    
-      {isError && <p>Error in fetching data...</p>}
-      
-      {selectedHouse ? (
-          <HouseDetail house={selectedHouse} />  //if truthy display detail
-        ) : (           
-          <>  
-           <Search   //since you are returning two components, enclosed it in a fragment
-              id="search"
-              value={stateOfSearchComponent}
-              isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
-              onInputChange={handleSearch}
-              >
-              <strong>Search:</strong>
-              </Search>
-              <br></br>         
-          <HouseList list={searchedHouses} //if falsy display HouseList
-                      onRemoveHouse={handleRemoveHouse} 
-                      onAddHouse={handleAddHouse} 
-                      //selectedHouseSetter= {setSelectedHouse}
-                      selectedHouseSetter= {setSelectedHouseWrapper}/> 
-          </>
-        )}
-
+      <label htmlFor={id}>{children}</label>
+      &nbsp;
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
+      />
     </>
- )}
+  );
+};
+
+const List = ({ list, onRemoveItem }) => (
+  <ul>
+    {list.map((item) => (
+      <Item
+        key={item.objectID}
+        item={item}
+        onRemoveItem={onRemoveItem}
+      />
+    ))}
+  </ul>
+);
+
+/*"objectID": 1,
+      "address": "12 Valley of Kings, Geneva",
+      "country": "Switzerland",
+      "description": "A superb detached Victorian property on one of the town's finest roads, within easy reach of Barnes Village. The property has in excess of 6000 sq/ft of accommodation, a driveway and landscaped garden.",
+      "price": 900000,
+      "photo": "277667" */
+const Item = ({ item, onRemoveItem }) => (
+  <li>
+    <span>{item.address}</span>
+    <span>{item.country}</span>
+    <span>{item.price}</span>
+    <span>
+      <button type="button" onClick={() => onRemoveItem(item)}>
+        Dismiss
+      </button>
+    </span>
+  </li>
+);
 
 export default App
