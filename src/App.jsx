@@ -207,6 +207,11 @@ import UseHousesHook from "../hooks/useHousesHook";
       returned values from the array are the current state (stories) 
       and the state updater function (setStories):
     */
+const welcome = {
+    subject: 'List of ',
+    title: 'Houses for Sale',
+   };   
+
 const initialStories = 
 [
     {
@@ -251,17 +256,29 @@ const initialStories =
     }
   ];  
 
- //  No need for this because we will fetch data directly using the API
+
+ //  We need for this because we will fetch data from an array
 const getAsyncStories = () =>
   new Promise((resolve) =>
     setTimeout(
       () => resolve({ data: { stories: initialStories } }),
-      2000
+      0
     )
   );  
 
- 
-  const storiesReducer = (state, action) => {
+//The first thing to do when using React.useReducer hook
+//is to define a reducer function. 
+//The function called "storiesReducer" receives an empty array
+//returns an array with two items:
+//          houses (current state) and
+//          dispatchHouses (state updater function)
+
+//The updater function updates the state "houses" IMPLICITLY (A)
+//dispatching an "action" for the reducer, The "action" comes with:
+//     1. Type
+//     2. and optional Payload
+
+const storiesReducer = (state, action) => {
     switch (action.type) {
       case 'STORIES_FETCH_INIT': //distinct type and payload 
                                  //received by dispatchStories 
@@ -311,17 +328,18 @@ const getAsyncStories = () =>
     }
   };
   
+  //key and initialState are the parameters passed to this function call
   const useStorageState = (key, initialState) => {
-
     const [value, setValue] = React.useState(
-        localStorage.getItem('key') || initialState 
+        localStorage.getItem('key') || initialState //get item from localstorage 
+                                        //if not there use initialState as value
     );
     
     React.useEffect(() => {
       console.log('useEffect fired. Displaying value of dependency array ' + [ value, key]  );
-        localStorage.setItem(key, value);  
+        localStorage.setItem(key, value); //store value in the local storage
         },
-        [value, key]   //Dependency array
+        [value, key]   //Dependency array. if this changes localStorage.setItem fires
         ); //EOF useEffect
     
     //the returned values are returned as an array.
@@ -329,98 +347,32 @@ const getAsyncStories = () =>
 
 } //EOF create custom hook
     
-
+/*===============================================
+// App section
+/===============================================*/
 const App = () => {
-
-   const welcome = {
-     subject: 'List of ',
-     title: 'Houses for Sale',
-   };
  
-  
   const [searchTerm, setSearchTerm] =  useStorageState ( //<-- custom hook
     'search', //key
-    'React',  //Initial state
+    'Switzerland',  //Initial state
     );
 
-
-   // Step 2: In using REACT REDUCER:
-   //First replace: const [houses, setHouses] = React.useState([]);
-   //const[houses, dispatchHouses] = React.useReducer(housesReducer, []); //move to useHouse hook
-
-   //The new function receives a reducer function called "housesReducer"
-   //(see line 251)
-   //and empty array [] and returns an array with two items:
-   //          houses (current state) and
-   //          dispatchHouses (state updater function)
-   //The updater function updates the state "houses" IMPLICITLY (A)
-   //dispatching an "action" for the reducer, The "action" comes with:
-   //
-   //     1. Type
-   //     2. and optional Payload
- 
-   //Introduce another state called "isLoading" 
-   // const [isLoading, setIsLoading] = React.useState(false);
-
-    //Introduce another state called "isError"
-    //const [isError, setIsError] = React.useState(false);
-
-
-  /*Step 3: Handle all functions that modify state. 
-     The first state transition function is 
-          getAsyncHouses(). 
-   
-    It is a STATE transition because it fetches the data for the 'house" object.
-    Modify useEffect to use "dispatchHouses" reducer function (B)
-    We want to start off with an empty list of stories and simulate 
-    fetching these stories asynchronously. In a new useEFFECT hook, call the 
-    function and resolve the returned promise as a side-effect.*/
-    // React.useEffect(() => {  //(B)
-    //   //remember the first parameter to useEffect 
-    //   //are function(s)
-    //   setIsLoading(true);
-    //   getAsyncHouses() 
-    //    .then(result => { 
-    //       dispatchHouses({     
-    //              type: 'GET_HOUSES',   
-    //            payload: result.data.houses,  
-    //            });
-    //            setIsLoading(false);
-    //           }) 
-    //         .catch(() => setIsError(true));
-    //     }, []);  
-    
-  //data: [], isLoading, isError flags hooks merged into one 
+   //data: [], isLoading, isError flags hooks merged into one 
    //useReducer hook for a unified state.
    const [stories, dispatchStories] = React.useReducer( //A
    storiesReducer,
    { data: [], isLoading: false, isError: false } //We want an empty list data [] 
                                                   //for the initial state, set isloading=false
                                                   //is error=false
- );
+ ); //EOF React.useReducer
 
- //After merging the three useState hooks into one Reducer hook,
-  //we cannot use the state updater functions from React's 
-  //useState Hooks anymore like:
-  //     setIsLoading, setIsError
-  //everything related to asynchronous data fetching must now use 
-  //the new dispatch function "dispatchStories" see (A)
-  //for updating state transitions 
+  //This side effect fires because we made a call to
   React.useEffect(() => {
     //dispatchStories receiving different payload
    dispatchStories({ type: 'STORIES_FETCH_INIT' }); //for init
                     //dispatchStories receives STORIES_FETCH_INIT as type
 
-   //First - API is used to fetch popular tech stories for a certain query 
-   //        (a search term). In this case  we fetch stories about 'react' (B)
-
-   //Second - the native browser's fetch API (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-   //         to make this request.
-   //         For 'fetch' API, the response needs to be translated to JSON (C)
-   
-   //Finally - the returned result has a different data structure which we send
-   //          payload to our component's state reducer (dispatchStories)
-   getAsyncStories()
+   getAsyncStories() //this function reads an inline array called "initialStories"
       .then((result) => {
         dispatchStories({
           type: 'STORIES_FETCH_SUCCESS',
@@ -430,7 +382,8 @@ const App = () => {
       .catch(() =>
         dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
       );
-  }, []); 
+  }, []); //EOF React.useEffect(
+
 
   const handleRemoveStory = (item) => {
     dispatchStories({
@@ -445,8 +398,9 @@ const App = () => {
 
   //by addressing the state as object and not as array anymore,
   //note that it operates on the state.data no longer on the plain state.
+  //"stories" here is the state updated by the reducer function (see line 362)
   const searchedStories = stories.data.filter((story) =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+    story.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddHouse = (item) => { 
@@ -545,7 +499,7 @@ const List = ({ list, onRemoveItem }) => (
 /*"objectID": 1,
       "address": "12 Valley of Kings, Geneva",
       "country": "Switzerland",
-      "description": "A superb detached Victorian property on one of the town's finest roads, within easy reach of Barnes Village. The property has in excess of 6000 sq/ft of accommodation, a driveway and landscaped garden.",
+      "description": "A superb detached 
       "price": 900000,
       "photo": "277667" */
 const Item = ({ item, onRemoveItem }) => (
