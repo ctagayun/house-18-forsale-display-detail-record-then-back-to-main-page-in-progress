@@ -46,7 +46,7 @@ import HouseRow from './houserow';
           id={id}
           type={type}
           value={value}
-          onChange={onInputChange} //points to HandleSearchInput
+          onChange={onInputChange} //points to HandleSearch 
         />
 
        { <button        

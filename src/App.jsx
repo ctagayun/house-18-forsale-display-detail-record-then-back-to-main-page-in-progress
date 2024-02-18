@@ -1,4 +1,7 @@
 /*
+
+For this project checkout:
+   House-10-forsale, House-12-forsale, House-17
 Concepts to Remember:
      Visit this link for the detailed explanation when useEffect fires:
 
@@ -323,6 +326,15 @@ const storiesReducer = (state, action) => {
             (story) => action.payload.objectID !== story.objectID
           ),
         };
+
+      case 'ADD_HOUSE':
+        return {
+          ...state,
+          isLoading: false,
+          isError: false,
+          data: action.payload,
+       };
+
       default:
         throw new Error();
     }
@@ -421,9 +433,9 @@ const handleSearchSubmit = () => {  //CC
   const [selectedHouse, setSelectedHouse] = React.useState(); 
 
   const handleAddHouse = (item) => { 
-    dispatchHouses({
+    dispatchStories({
       type: 'ADD_HOUSE',  //TYPE
-      payload: [...houses,      //contains the searchedHouses state
+      payload: [...searchedStories, //contains the searchedHouses state
       {                         //the below records will be appended to the end of ...houses
         objectID: 9,
         address: "1456 Riverside Road",
@@ -432,11 +444,12 @@ const handleSearchSubmit = () => {  //CC
       },
       {      //the below record will be appended to the end of ...list
         objectID: 10,
-        address: "1196 Justus Road",
+        address: "1196 Justus Road2",
         country: "USA",
         price: 0
       }, 
-       ] }        
+       ] }  
+           
     );
 
   }
