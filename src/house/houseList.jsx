@@ -31,7 +31,7 @@ import HouseRow  from './houserow';
 
 //We are not using selectedHouseSetter in HouseList. We just 
 //want to pass it as props to HouseRow
-const HouseList = ({list, onRemoveHouse, onAddHouse, selectedHouseSetter}) =>
+const HouseList = ({list, onRemoveHouse, onAddHouse, onSelectHouse, selectedHouseSetter}) =>
     {
       const mySearchHouses = JSON.stringify(list);
       console.log("SearchedHouses = " + mySearchHouses );
@@ -45,7 +45,7 @@ const HouseList = ({list, onRemoveHouse, onAddHouse, selectedHouseSetter}) =>
             <table className="table table-hover">
               <thead>
                 <tr>
-                  
+                  <th>ObjectID</th>
                   <th>Address</th>
                   <th>Country</th>
                   <th>Asking Price</th>
@@ -66,6 +66,7 @@ const HouseList = ({list, onRemoveHouse, onAddHouse, selectedHouseSetter}) =>
                       house={record}
                       onRemoveItem = {onRemoveHouse} //contains the onRemoveItem handler
                       onAddHouse = {onAddHouse}
+                      onSelectHouse={onSelectHouse}
                       selectedHouseSetter = {selectedHouseSetter} //pass to HouseRow the selected record
                   />
                 ))}

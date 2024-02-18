@@ -366,7 +366,7 @@ const App = () => {
  
   const [searchTerm, setSearchTerm] =  useStorageState ( //<-- custom hook
     'search', //key
-    'Switzerland',  //Initial state
+    '',  //Initial state
     );
 
    //data: [], isLoading, isError flags hooks merged into one 
@@ -454,6 +454,11 @@ const handleSearchSubmit = () => {  //CC
 
   }
    
+  const onSelectHouse = (event) => {
+    console.log('td clicked = ' + (event.target.value));
+    event.stopPropagation()
+  };
+
   return (
     <div>
       <Header  headerText={welcome} /> 
@@ -482,6 +487,7 @@ const handleSearchSubmit = () => {  //CC
           <HouseList list={searchedStories} //if falsy display HouseList
                       onRemoveHouse={handleRemoveStory} 
                       onAddHouse={handleAddHouse} 
+                      onSelectHouse={onSelectHouse}
                       selectedHouseSetter= {setSelectedHouse}/>  
           </>
                       

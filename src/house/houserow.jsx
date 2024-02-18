@@ -19,12 +19,13 @@ import currencyFormatter from "../helpers/currencyFormatter";
    </button>
  
   */
-const HouseRow = ({house, onRemoveItem, selectedHouseSetter }) => (
+const HouseRow = ({house, onRemoveItem, onSelectHouse, selectedHouseSetter}) => (
     //selectedHouseSetter is the updater function. When a row 
     //in the table is clicked this function updates the state
     //defined in app.jsx const [selectedHouse, setSelectedHouse] = React.useState();
-    <tr onClick={() => selectedHouseSetter(house)}> 
-     <td>{house.objectID} </td>
+    //<tr onClick={() => selectedHouseSetter(house)}> 
+    <tr> 
+     <td onClick={() => onSelectHouse(house)}>{house.objectID} </td>
      <td>{house.address}</td>
      <td>{house.country}</td>
     

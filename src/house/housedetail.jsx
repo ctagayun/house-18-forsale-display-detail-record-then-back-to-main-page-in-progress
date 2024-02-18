@@ -6,7 +6,7 @@
 import currencyFormatter from "../helpers/currencyFormatter";
 import defaultPhoto from "../images/defaultPhoto";
 
-const HouseDetail = ({ house }) => {
+const HouseDetail = ({ house, onClick }) => {
   const myHouse = JSON.stringify(house);
   console.log("House Detail house Props = " + myHouse);
   return (
@@ -44,7 +44,8 @@ const HouseDetail = ({ house }) => {
        </div>
        <div className="row">
           <div className="col-1">
-          <button className="btn btn-success btn-sm float-right" type="btn">
+          <button className="btn btn-success btn-sm float-right"
+              type="btn" onClick="onClick">
                 Cancel 
           </button>
          </div>  
