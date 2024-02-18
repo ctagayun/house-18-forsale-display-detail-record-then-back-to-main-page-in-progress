@@ -395,10 +395,10 @@ const handleRemoveStory = (item) => {
 
   //"houses" is the array of houses newly created by the 
   //filter() method.
-  const searchedHouses = houses.filter((house) =>
+ // const searchedHouses = houses.filter((house) =>
 
-  house.country.toLowerCase().includes(stateOfSearchComponent.toLowerCase())
-);
+ // house.country.toLowerCase().includes(stateOfSearchComponent.toLowerCase())
+//);
   
 const handleSearch = (event) => {
   setSearchTerm(event.target.value);
@@ -458,21 +458,14 @@ const handleSearchSubmit = () => {  //CC
 
       {stories.isError && <p>Something went wrong ...</p>}
 
-      {stories.isLoading ? (
-        <p>Loading ...</p>
-      ) : (
-        <List
-          list={stories.data}
-          onRemoveItem={handleRemoveStory}
-          onClick={handleAddHouse}
-        />
-      )}
+      {stories.isLoading && <p>Loading ...</p> }
+     
 
       {selectedHouse ? (
           <HouseDetail house={selectedHouse} />  //if truthy display detail
         ) : (                      
-          <HouseList list={searchedHouses} //if falsy display HouseList
-                      onRemoveHouse={handleRemoveHouse} 
+          <HouseList list={searchedStories} //if falsy display HouseList
+                      onRemoveHouse={handleRemoveStory} 
                       onAddHouse={handleAddHouse} 
                       selectedHouseSetter= {setSelectedHouse}/>  //State
         )}
