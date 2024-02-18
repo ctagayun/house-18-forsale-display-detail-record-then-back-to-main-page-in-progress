@@ -192,313 +192,454 @@ which allows its users to remove the item from the list.
     following command
        npm install vite-plugin-eslint --save-dev
     */
-       import * as React from 'react';
-       import './App.css'
-       import Header from "./header";
-       import HouseList from './house/houseList';
-       import Search from './house/search';
-       import HouseDetail from './house/housedetail';
-       
-       /*
-             At the moment initialHouses is unstateful variable
-             To gain control over the list, lets make it stateful.
-             By using it as initial state in React's useState Hook. The 
-             returned values from the array are the current state (stories) 
-             and the state updater function (setStories):
-           */
-       const initialHouses = 
-       [
-           {
-             "objectID": 1,
-             "address": "12 Valley of Kings, Geneva",
-             "country": "Switzerland",
-             "description": "A superb detached Victorian property on one of the town's finest roads, within easy reach of Barnes Village. The property has in excess of 6000 sq/ft of accommodation, a driveway and landscaped garden.",
-             "price": 900000,
-             "photo": "277667"
-           },
-           {
-             "objectID": 2,
-             "address": "89 Road of Forks, Bern",
-             "country": "Switzerland",
-             "description": "This impressive family home, which dates back to approximately 1840, offers original period features throughout and is set back from the road with off street parking for up to six cars and an original Coach House, which has been incorporated into the main house to provide further accommodation. ",
-             "price": 500000,
-             "photo": "462358"
-           },
-           {
-             "objectID": 3,
-             "address": "Grote Hof 12, Amsterdam",
-             "country": "The Netherlands",
-             "description": "This house has been designed and built to an impeccable standard offering luxurious and elegant living. The accommodation is arranged over four floors comprising a large entrance hall, living room with tall sash windows, dining room, study and WC on the ground floor.",
-             "price": 200500,
-             "photo": "259600"
-           },
-           {
-             "objectID": 4,
-             "address": "Meel Kade 321, The Hague",
-             "country": "The Netherlands",
-             "description": "Discreetly situated a unique two storey period home enviably located on the corner of Krom Road and Recht Road offering seclusion and privacy. The house features a magnificent double height reception room with doors leading directly out onto a charming courtyard garden.",
-             "price": 259500,
-             "photo": "534182"
-           },
-           {
-             "objectID": 5,
-             "address": "Oude Gracht 32, Utrecht",
-             "country": "The Netherlands",
-             "description": "This luxurious three bedroom flat is contemporary in style and benefits from the use of a gymnasium and a reserved underground parking space.",
-             "price": 400500,
-             "photo": "164558"
-           }
-         ];  
-       
-         const housesReducer = (state, action) => { //always receives a state 
-           //and action
-             switch (action.type){ //this is what it means by reducer function
-             //specifies how should state change based
-             //on the "action" passed by the reducerDispatch()
-             case 'GET_HOUSES':
-             return action.payload; //specifies how should state change  
-       
-             case 'DELETE_HOUSE':
-             return state.filter(
-             (house) => action.payload.objectID !== house.objectID //specifies how should state change 
-             );
-             case 'ADD_HOUSE':
-             return action.payload;   
-       
-             default:
-             throw new Error();
-             }
-             //action is always associated 
-             //with a type and "payload".
-       
-             };
-       
-           /* The following  is a custom hook that will store the state in a 
-            local storage. useStorageState which will keep the component's 
-            state in sync with the browser's local storage.
-       
-           This custom hook returns
-             1. state 
-             2. and a state updater function
-           and accepts an initial state as argument. 
-       
-            This is the custom hook before it was refactored to make it generic:
-            const [searchTerm, setSearchTerm] = React.useState(''); 
-               1. searchTerm renamed to 'value'
-               2. setSearchTerm renamed to 'setValue'
-         */
-            const useStorageState = (key, initialState) => {
-                 const [value, setValue] = React.useState(
-                     localStorage.getItem('key') || initialState 
-                 );
-                 
-                 React.useEffect(() => {
-                   console.log('useEffect fired. Displaying value of dependency array ' + [ value, key]  );
-                     localStorage.setItem(key, value);  
-                     },
-                     [value, key]   //Dependency array
-                     ); //EOF useEffect
-                 
-                 //the returned values are returned as an array.
-                 return [value, setValue]; 
-             
-             } //EOF create custom hook
-           
-           /* Fetching data. We start off with a function that returns a 
-            promise with data in its shorthand version once it resolves. 
-            Even though the data should arrive asynchronously when we start the 
-            application, it appears to arrive synchronously, because it's rendered 
-            immediately. Let's change this by giving it a bit of a realistic delay.
-            When resolving the promise, delay it for 2 seconds:
-          */
-           const getAsyncHouses = () =>
-              new Promise((resolve) =>
-              setTimeout(
-                () => resolve({ data: { houses: initialHouses } }),
-                2000
-              )
-            );
-       
-            
-       const App = () => {
-       
-          const welcome = {
-            subject: 'List of ',
-            title: 'Houses for Sale',
-          };
-        
-         /* Call custom useStorageState hook to assign value to stateOfSearchComponent, 
-         setSearchTerm */
-         const [stateOfSearchComponent, setSearchTerm] =  useStorageState ( //<-- custom hook
-           'search', //key
-           '',  //Initial state
-           );
-       
-         /* Step 1: Steps in using React.useReducer:
-             First create a reducer function called housesReducer.
-          We will replace React.useState with React.useReducer.
-             The reducer function is responsible for specifying how 
-          the state should change in response to dispatched actions, 
-          based on the current state and the action.
-         */
-         
-       
-          // Step 2: In using REACT REDUCER:
-          //First lets use a Reducer instead of const [houses, setHouses] = React.useState([]);
-          //useState to manage state. The [] is the initial state
-       
-          const[houses, dispatchHouses] = React.useReducer(housesReducer, []);
-       
-          //The new function receives a reducer function called "housesReducer"
-          //(see line 251)
-          //and empty array [] and returns an array with two items:
-          //          houses (current state) and
-          //          dispatchHouses (state updater function)
-          //The updater function updates the state "houses" IMPLICITLY (A)
-          //dispatching an "action" for the reducer, The "action" comes with:
-          //
-          //     1. Type
-          //     2. and optional Payload
-        
-          //Introduce another state called "isLoading" 
-           const [isLoading, setIsLoading] = React.useState(false);
-       
-           //Introduce another state called "isError"
-           const [isError, setIsError] = React.useState(false);
-       
-       
-         /*Step 3: Handle all functions that modify state. 
-            The first state transition function is 
-                 getAsyncHouses(). 
-          
-           It is a STATE transition becuase it fetches the data for the 'house" object.
-           Modify useEffect to use "dispatchHouses" reducer function (B)
-           We want to start off with an empty list of stories and simulate 
-           fetching these stories asynchronously. In a new useEFFECT hook, call the 
-           function and resolve the returned promise as a side-effect.*/
-           React.useEffect(() => {  //(B)
-             //remember the first parameter to useEffect 
-             //are function(s)
-             setIsLoading(true);
-             getAsyncHouses() 
-              .then(result => { 
-                 dispatchHouses({     
-                        type: 'GET_HOUSES',   
-                      payload: result.data.houses,  
-                      });
-                      setIsLoading(false);
-                     }) 
-                   .catch(() => setIsError(true));
-               }, []);  
-         /*  
-       
-           Next we write event handler which removes an item from HouseList
-           Select the record from the state called 'houses' based on the filter
-           Here, the JavaScript array's built-in filter method creates
-           a new filtered array called 'house'.
-       
-             The filter() method takes a function as an argument, 
-           which accesses each item in the array and returns /
-           true or false. If the function returns true, meaning the condition is 
-           met, the item stays in the newly created array; if the function 
-           returns false, it's removed from the filtered array.
-       
-           Pass this handler to List component when instantiating the component
-       
-        STEP 4:The second state transition we want to handle using using 
-           dispatchHouses() reducer function is:
-                handleRemoveHouse().  
-            It is another state transition becuase it deletes a record.
-       
-            This handler computes the new stories. It is the second state transition.
-         It is valid to move this logic into the reducer function. Now the 
-         reducer function has to cover this state in a conditional transition.
-         See (B) in storiesReducer
-           */
-         const handleRemoveHouse = (item) => { 
-              // const newHouses = houses.filter(   <== MOVE THIS LOGIC TO  HouseReducer()
-              //  (house) => item.objectID !== house.objectID
-              // );
-             dispatchHouses({    //The second state transition that we need to handle is
-                                 //the DELETE record. This replaced setHouses(newHouses);
-                                 //Now add the TYPE and PAYLOAD and the business logic 
-                                 //to the HouseReducer() function to cover this new case.
-               type: 'DELETE_HOUSE',
-               payload: item,
-             });
-           };
-         
-         /*STEP 5:The third state transition we want to handle using  
-            dispatchHouses() reducer function is: 
-                 handleAddHouse()  
-           It is another state transition because it deletes a record.
-          */
-       
-         const handleAddHouse = (item) => { 
-       
-           dispatchHouses({
-             type: 'ADD_HOUSE',  //TYPE
-             payload: [...houses,      //contains the searchedHouses state
-             {                         //the below records will be appended to the end of ...houses
-               objectID: 9,
-               address: "1456 Riverside Road",
-               country: "USA",
-               price: 25000000
-             },
-             {      //the below record will be appended to the end of ...list
-               objectID: 10,
-               address: "1456 Riverside Road",
-               country: "USA",
-               price: 25000000
-             },
-              ] }        
-           );
-       
-         }
-         //Finally after updating getAsyncHouses(), handleRemoveHouse()
-         //and handleAddHouse(), modify houseReducer() function in line 251
-         //to handle all the three cases. GET_HOUSES, DELETE_HOUSE, ADD_HOUSE
-          
-         const handleSearch = (event) => {
-             setSearchTerm(event.target.value); 
-          };
-       
-           //"houses" is the array of houses newly created by the filter() method.
-         const searchedHouses = houses.filter((house) =>
-             house.country.toLowerCase().includes(stateOfSearchComponent.toLowerCase())
-           );
-       
-          //Introduce another state for displaying HouseDetail.
-          //I am not passing initial value that means selectedHouse 
-          //will be initiall undefined.
-          const [selectedHouse, setSelectedHouse] = React.useState(); 
-       
-         return (
-           <>
-            <Header  headerText={welcome} />   
-       
-            <Search 
-              id="search"
-              value={stateOfSearchComponent}
-              isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
-              onInputChange={handleSearch}
-             >
-              <strong>Search with 2 sec delay:</strong>
-             </Search>
-             <br></br>
-       
-             {isError && <p>Error in fetching data...</p>}
-             
-             {selectedHouse ? (
-                 <HouseDetail house={selectedHouse} />  //if truthy display detail
-               ) : (                      
-                 <HouseList list={searchedHouses} //if falsy display HouseList
-                             onRemoveHouse={handleRemoveHouse} 
-                             onAddHouse={handleAddHouse} 
-                             selectedHouseSetter= {setSelectedHouse}/>  //State
-               )}
-           </>
+import * as React from 'react';
+import './App.css'
+import Header from "./header";
+import HouseList from './house/houseList';
+import Search from './house/search';
+import HouseDetail from '../src/house/housedetail';
+import UseHousesHook from "../hooks/useHousesHook";
+
+/*
+      At the moment initialHouses is unstateful variable
+      To gain control over the list, lets make it stateful.
+      By using it as initial state in React's useState Hook. The 
+      returned values from the array are the current state (stories) 
+      and the state updater function (setStories):
+    */
+const welcome = {
+    subject: 'List of ',
+    title: 'Houses for Sale',
+   };   
+
+const initialStories = 
+[
+    {
+      "objectID": 1,
+      "address": "12 Valley of Kings, Geneva",
+      "country": "Switzerland",
+      "description": "A superb detached Victorian property on one of the town's finest roads, within easy reach of Barnes Village. The property has in excess of 6000 sq/ft of accommodation, a driveway and landscaped garden.",
+      "price": 900000,
+      "photo": "277667"
+    },
+    {
+      "objectID": 2,
+      "address": "89 Road of Forks, Bern",
+      "country": "Switzerland",
+      "description": "This impressive family home, which dates back to approximately 1840, offers original period features throughout and is set back from the road with off street parking for up to six cars and an original Coach House, which has been incorporated into the main house to provide further accommodation. ",
+      "price": 500000,
+      "photo": "462358"
+    },
+    {
+      "objectID": 3,
+      "address": "Grote Hof 12, Amsterdam",
+      "country": "The Netherlands",
+      "description": "This house has been designed and built to an impeccable standard offering luxurious and elegant living. The accommodation is arranged over four floors comprising a large entrance hall, living room with tall sash windows, dining room, study and WC on the ground floor.",
+      "price": 200500,
+      "photo": "259600"
+    },
+    {
+      "objectID": 4,
+      "address": "Meel Kade 321, The Hague",
+      "country": "The Netherlands",
+      "description": "Discreetly situated a unique two storey period home enviably located on the corner of Krom Road and Recht Road offering seclusion and privacy. The house features a magnificent double height reception room with doors leading directly out onto a charming courtyard garden.",
+      "price": 259500,
+      "photo": "534182"
+    },
+    {
+      "objectID": 5,
+      "address": "Oude Gracht 32, Utrecht",
+      "country": "The Netherlands",
+      "description": "This luxurious three bedroom flat is contemporary in style and benefits from the use of a gymnasium and a reserved underground parking space.",
+      "price": 400500,
+      "photo": "164558"
+    }
+  ];  
+
+
+ //  We need for this because we will fetch data from an array
+const getAsyncStories = () =>
+  new Promise((resolve) =>
+    setTimeout(
+      () => resolve({ data: { stories: initialStories } }),
+      0
+    )
+  );  
+
+//The first thing to do when using React.useReducer hook
+//is to define a reducer function. 
+//The function called "storiesReducer" receives an empty array
+//returns an array with two items:
+//          houses (current state) and
+//          dispatchHouses (state updater function)
+
+//The updater function updates the state "houses" IMPLICITLY (A)
+//dispatching an "action" for the reducer, The "action" comes with:
+//     1. Type
+//     2. and optional Payload
+
+const storiesReducer = (state, action) => {
+    switch (action.type) {
+      case 'STORIES_FETCH_INIT': //distinct type and payload 
+                                 //received by dispatchStories 
+                                 //dispatch function
+                                 //so we need to add it here
+        return {
+          ...state,              //return new state object with KV pairs
+                                 //via spread operator from current state object
+          isLoading: true,
+          isError: false,
+        };
+      case 'STORIES_FETCH_SUCCESS': //distinct type and payload 
+                                    //received by dispatchStories 
+                                    //dispatch function
+                                    //so we need to add it here
+        return {
+          ...state,
+          isLoading: false,
+          isError: false,
+          data: action.payload,
+        };
+      case 'STORIES_FETCH_FAILURE':   //another distinct type and payload 
+                                      //received by dispatchStories 
+                                      //dispatch function 
+                                      //so we need to add it here
+        return {
+          ...state,
+          isLoading: false,
+          isError: true,
+        };
+      case 'REMOVE_STORY':              //another distinct type and payload 
+                                        //received by dispatchStories 
+                                        //dispatch function
+                                        //so we need to add it here
+                                    //Observe how the REMOVE_STORY action 
+                                    //changed as well. It operates on the 
+                                    //state.data, and no longer just on the
+                                    // plain "state".
+        return {
+          ...state,
+          data: state.data.filter(  //now operate on state.data not just "state"
+            (story) => action.payload.objectID !== story.objectID
+          ),
+        };
+      default:
+        throw new Error();
+    }
+  };
+  
+  //key and initialState are the parameters passed to this function call
+  const useStorageState = (key, initialState) => {
+    const [value, setValue] = React.useState(
+        localStorage.getItem('key') || initialState //get item from localstorage 
+                                        //if not there use initialState as value
+    );
+    
+    React.useEffect(() => {
+      console.log('useEffect fired. Displaying value of dependency array ' + [ value, key]  );
+        localStorage.setItem(key, value); //store value in the local storage
+        },
+        [value, key]   //Dependency array. if this changes localStorage.setItem fires
+        ); //EOF useEffect
+    
+    //the returned values are returned as an array.
+    return [value, setValue]; 
+
+} //EOF create custom hook
+    
+/*===============================================
+// App section
+/===============================================*/
+const App = () => {
+ 
+  const [searchTerm, setSearchTerm] =  useStorageState ( //<-- custom hook
+    'search', //key
+    'Switzerland',  //Initial state
+    );
+
+   //data: [], isLoading, isError flags hooks merged into one 
+   //useReducer hook for a unified state.
+   const [stories, dispatchStories] = React.useReducer( //A
+   storiesReducer,
+   { data: [], isLoading: false, isError: false } //We want an empty list data [] 
+                                                  //for the initial state, set isloading=false
+                                                  //is error=false
+ ); //EOF React.useReducer
+
+//This side effect fires because we made a call to
+React.useEffect(() => {
+  //dispatchStories receiving different payload
+  dispatchStories({ type: 'STORIES_FETCH_INIT' }); //for init
+                  //dispatchStories receives STORIES_FETCH_INIT as type
+
+  getAsyncStories() //this function reads an inline array called "initialStories"
+    .then((result) => {
+      dispatchStories({
+        type: 'STORIES_FETCH_SUCCESS',
+        payload: result.data.stories,
+      });
+    })
+    .catch(() =>
+      dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+    );
+}, []); //EOF React.useEffect(
+
+
+const handleRemoveStory = (item) => {
+  dispatchStories({
+    type: 'REMOVE_STORY',
+    payload: item,
+  });
+};
+
+
+  //"houses" is the array of houses newly created by the 
+  //filter() method.
+  const searchedHouses = houses.filter((house) =>
+
+  house.country.toLowerCase().includes(stateOfSearchComponent.toLowerCase())
+);
+  
+const handleSearch = (event) => {
+  setSearchTerm(event.target.value);
+};
+
+const handleSearchSubmit = () => {  //CC
+  setUrl(`${API_ENDPOINT}${searchTerm}`);
+};
+
+  //by addressing the state as object and not as array anymore,
+  //note that it operates on the state.data no longer on the plain state.
+  //"stories" here is the state updated by the reducer function (see line 362)
+  const searchedStories = stories.data.filter((story) =>
+    story.country.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  //Introduce another state for displaying HouseDetail.
+  //I am not passing initial value that means selectedHouse 
+  //will be initiall undefined.
+  const [selectedHouse, setSelectedHouse] = React.useState(); 
+
+  const handleAddHouse = (item) => { 
+    dispatchHouses({
+      type: 'ADD_HOUSE',  //TYPE
+      payload: [...houses,      //contains the searchedHouses state
+      {                         //the below records will be appended to the end of ...houses
+        objectID: 9,
+        address: "1456 Riverside Road",
+        country: "USA",
+        price: 25000000
+      },
+      {      //the below record will be appended to the end of ...list
+        objectID: 10,
+        address: "1196 Justus Road",
+        country: "USA",
+        price: 0
+      }, 
+       ] }        
+    );
+
+  }
+   
+  return (
+    <div>
+      <Header  headerText={welcome} /> 
+
+      <Search 
+       id="search"
+       value={searchTerm}
+       isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
+       onInputChange={handleSearch}  
+       onClick={handleSearchSubmit} 
+      >
+      <strong>Search:</strong>
+      </Search>
+      <hr />
+
+      {stories.isError && <p>Something went wrong ...</p>}
+
+      {stories.isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List
+          list={stories.data}
+          onRemoveItem={handleRemoveStory}
+          onClick={handleAddHouse}
+        />
+      )}
+
+      {selectedHouse ? (
+          <HouseDetail house={selectedHouse} />  //if truthy display detail
+        ) : (                      
+          <HouseList list={searchedHouses} //if falsy display HouseList
+                      onRemoveHouse={handleRemoveHouse} 
+                      onAddHouse={handleAddHouse} 
+                      selectedHouseSetter= {setSelectedHouse}/>  //State
         )}
+
+    </div>
+  );
+};
+
+ /*const InputWithLabel = ({
+  id,
+  value,
+  type = 'text',
+  onInputChange,
+  isFocused,
+  children,
+}) => {
+  const inputRef = React.useRef();
+
+  React.useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
+
+  return (
+    <>
+      <label htmlFor={id}>{children}</label>
+      &nbsp;
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
+      />
+    </>
+  );
+};
+
+const List = ({ list, onRemoveItem }) => (
+  <ul>
+    {list.map((item) => (
+      <Item
+        key={item.objectID}
+        item={item}
+        onRemoveItem={onRemoveItem}
+      />
+    ))}
+  </ul>
+);
+
+ "objectID": 1,
+      "address": "12 Valley of Kings, Geneva",
+      "country": "Switzerland",
+      "description": "A superb detached 
+      "price": 900000,
+      "photo": "277667"  
+const Item = ({ item, onRemoveItem }) => (
+  <li>
+    <span>{item.address}</span>
+    <span>{item.country}</span>
+    <span>{item.price}</span>
+    <span>
+      <button type="button" onClick={() => onRemoveItem(item)}>
+        Dismiss
+      </button>
+    </span>
+  </li>
+);
+*/
+
+export default App
+
+//========================================================== 
+ //Note on Map:
+ //Within the map() method, we have access to each object and its properties.
+ 
+ //useState
+ //By using useState, we are telling React that we want to have a 
+ //stateful value which changes over time. And whenever this stateful value 
+ //changes, the affected components (here: Search component) 
+ //will re-render to use it (here: to display the recent value).
+
+ /* 
+     The filter() method takes a function 
+        as an argument, which accesses each item in the array and returns /
+        true or false. If the function returns true, meaning the condition is 
+        met, the item stays in the newly created array; if the function 
+        returns false, it's removed from the filtered array.
+
+  
+ */
+ 
+ /*Note on Map:
+   Within the map() method, we have access to each object and its properties.
+
+ // concatenating variables into a string
+    var fullName = `${firstName} ${lastName}`
+    console.log(fullName);
+
+
+ //useState
+    By using useState, we are telling React that we want to have a 
+ stateful value which changes over time. And whenever this stateful value 
+ changes, the affected components (here: Search component) 
+ will re-render to use it (here: to display the recent value).
+
+  //Work flow of a useState:
+       When the user types into the input field, the input field's change event 
+      runs into the event handler. The handler's logic uses the event's value 
+      of the target and the state updater function to set the updated state. 
+      Afterward, the component re-renders (read: the component function runs). 
+      The updated state becomes the current state (here: searchTerm) and is 
+      displayed in the component's JSX.
+
+  //Arrow Function
+    function getTitle(title) { - convert to arrow function see below
+    
+    const getTitle =(title) => 
+       (
+        title
+       );
+
+    Eliminate bracket and "return" statement if no business logic before 
+    the function - concise
+   
+
+  //Arrow function - 
+   If there is a business business logic. Otherwise retain the {} and
+   put a "return" statement 
+     const App = () => {
+       ...
+       return xyz;
+     } 
+ 
+  //How to use a React.Reducer hook 
+  To use Reducer (1) first define a reducer function.
+     1. A reducer action is always associated with a type. As best 
+        practice with a payload.
+        Example:
+          const storiesReducer = (state, action) =>{
+          if (action.type === 'SET_STORIES'){
+            //If the type matches a condition in the reducer. Return a new
+            //state based on the incoming state and action
+            return action.payload;
+          }
+          else{
+          //throw an error if isn't covered by the reducer to remind yourself
+          //that the implementation is not covered
+            throw new Error();
+          }
+        }
+      2. The second thing to do is to replaceReact.useState to use a reducer hook
+         like this: 
+
+          const [stories, dispatchStories] = React.useReducer(storiesReducer,[]);
+
+          1. receives a reducer function called "storiesReducer"
+          2. receives an initial state of empty array []
+          3. returns an array with 2 item: 
+            - The first item is "stories" which is the current state
+            - The second item is the updater function named "dispatchStories"
+            Unlike useState, the updater function of Reducer sets the state
+            "implicitly" by dispatching an "action". Example:
+               dispatchStories({
+                 type: 'SET_STORIES',   <== this is the action
+               payload: result.data.stories,
+             });
        
-       export default App
-       
+ */
