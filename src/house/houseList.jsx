@@ -45,14 +45,14 @@ const HouseList = ({list, onRemoveHouse, onAddHouse, selectedHouseSetter}) =>
             <table className="table table-hover">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  
                   <th>Address</th>
                   <th>Country</th>
                   <th>Asking Price</th>
                 </tr>
               </thead>
               <tbody>
-                {list.map((record) => (  //iterate and display each record in the table
+                {list.map((record) => ( 
                   //first time in list has already been populated by useState
                   //Instantiate the HouseRow component and pass each record
                   //to HouseRow component as props. Pass the delete record 
@@ -66,7 +66,7 @@ const HouseList = ({list, onRemoveHouse, onAddHouse, selectedHouseSetter}) =>
                       house={record}
                       onRemoveItem = {onRemoveHouse} //contains the onRemoveItem handler
                       onAddHouse = {onAddHouse}
-                      selectedHouseSetter = {selectedHouseSetter} //pass to EACH the HouseRow the selected record
+                      selectedHouseSetter = {selectedHouseSetter} //pass to HouseRow the selected record
                   />
                 ))}
               </tbody>
