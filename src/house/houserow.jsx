@@ -25,7 +25,7 @@ const HouseRow = ({house, onRemoveItem, onSelectHouse, selectedHouseSetter}) => 
     //defined in app.jsx const [selectedHouse, setSelectedHouse] = React.useState();
     //<tr onClick={() => selectedHouseSetter(house)}> 
     <tr> 
-     <td onClick={() => onSelectHouse(house)}>{house.objectID} </td>
+     <td onClick={() => onSelectHouse(house.objectID)}> {house.objectID} </td>
      <td>{house.address}</td>
      <td>{house.country}</td>
     
