@@ -396,6 +396,10 @@ const App = () => {
     setSearchTerm(event.target.value);
   };
 
+  const handleSearchSubmit = () => {  //CC
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
+  };
+
   //by addressing the state as object and not as array anymore,
   //note that it operates on the state.data no longer on the plain state.
   //"stories" here is the state updated by the reducer function (see line 362)
@@ -426,17 +430,17 @@ const App = () => {
    
   return (
     <div>
-      <h1>My Hacker Stories</h1>
+      <Header  headerText={welcome} /> 
 
-      <InputWithLabel
-        id="search"
-        value={searchTerm}
-        isFocused
-        onInputChange={handleSearch}
+      <Search 
+       id="search"
+       value={searchTerm}
+       isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
+       onInputChange={handleSearch}  
+       onClick={handleSearchSubmit} 
       >
-        <strong>Search:</strong>
-      </InputWithLabel>
-
+      <strong>Search:</strong>
+      </Search>
       <hr />
 
       {stories.isError && <p>Something went wrong ...</p>}
@@ -445,7 +449,7 @@ const App = () => {
         <p>Loading ...</p>
       ) : (
         <List
-          list={searchedStories}
+          list={stories.data}
           onRemoveItem={handleRemoveStory}
         />
       )}
@@ -516,3 +520,101 @@ const Item = ({ item, onRemoveItem }) => (
 );
 
 export default App
+
+//========================================================== 
+ //Note on Map:
+ //Within the map() method, we have access to each object and its properties.
+ 
+ //useState
+ //By using useState, we are telling React that we want to have a 
+ //stateful value which changes over time. And whenever this stateful value 
+ //changes, the affected components (here: Search component) 
+ //will re-render to use it (here: to display the recent value).
+
+ /* 
+     The filter() method takes a function 
+        as an argument, which accesses each item in the array and returns /
+        true or false. If the function returns true, meaning the condition is 
+        met, the item stays in the newly created array; if the function 
+        returns false, it's removed from the filtered array.
+
+  
+ */
+ 
+ /*Note on Map:
+   Within the map() method, we have access to each object and its properties.
+
+ // concatenating variables into a string
+    var fullName = `${firstName} ${lastName}`
+    console.log(fullName);
+
+
+ //useState
+    By using useState, we are telling React that we want to have a 
+ stateful value which changes over time. And whenever this stateful value 
+ changes, the affected components (here: Search component) 
+ will re-render to use it (here: to display the recent value).
+
+  //Work flow of a useState:
+       When the user types into the input field, the input field's change event 
+      runs into the event handler. The handler's logic uses the event's value 
+      of the target and the state updater function to set the updated state. 
+      Afterward, the component re-renders (read: the component function runs). 
+      The updated state becomes the current state (here: searchTerm) and is 
+      displayed in the component's JSX.
+
+  //Arrow Function
+    function getTitle(title) { - convert to arrow function see below
+    
+    const getTitle =(title) => 
+       (
+        title
+       );
+
+    Eliminate bracket and "return" statement if no business logic before 
+    the function - concise
+   
+
+  //Arrow function - 
+   If there is a business business logic. Otherwise retain the {} and
+   put a "return" statement 
+     const App = () => {
+       ...
+       return xyz;
+     } 
+ 
+  //How to use a React.Reducer hook 
+  To use Reducer (1) first define a reducer function.
+     1. A reducer action is always associated with a type. As best 
+        practice with a payload.
+        Example:
+          const storiesReducer = (state, action) =>{
+          if (action.type === 'SET_STORIES'){
+            //If the type matches a condition in the reducer. Return a new
+            //state based on the incoming state and action
+            return action.payload;
+          }
+          else{
+          //throw an error if isn't covered by the reducer to remind yourself
+          //that the implementation is not covered
+            throw new Error();
+          }
+        }
+      2. The second thing to do is to replaceReact.useState to use a reducer hook
+         like this: 
+
+          const [stories, dispatchStories] = React.useReducer(storiesReducer,[]);
+
+          1. receives a reducer function called "storiesReducer"
+          2. receives an initial state of empty array []
+          3. returns an array with 2 item: 
+            - The first item is "stories" which is the current state
+            - The second item is the updater function named "dispatchStories"
+            Unlike useState, the updater function of Reducer sets the state
+            "implicitly" by dispatching an "action". Example:
+               dispatchStories({
+                 type: 'SET_STORIES',   <== this is the action
+               payload: result.data.stories,
+             });
+       
+ */

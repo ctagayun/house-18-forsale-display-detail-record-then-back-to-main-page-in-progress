@@ -26,6 +26,7 @@ import HouseRow from './houserow';
     onInputChange, //this prop was assigned {handleSearch} the callback
     isFocused,
     children,
+    onClick
    }) => { 
      const inputRef = React.useRef();
 
@@ -35,19 +36,30 @@ import HouseRow from './houserow';
        }
      }, [isFocused]);
 
+      
      return (
-       <>
-         <label htmlFor={id}>{children}</label>
-         &nbsp;
-         <input
-           ref={inputRef}
-           id={id}
-           type={type}
-           value={value}
-           onChange={onInputChange}
-         />
-       </>
-     );
+      <>
+        <label htmlFor={id}>{children}</label>
+        &nbsp;
+        <input
+          ref={inputRef}
+          id={id}
+          type={type}
+          value={value}
+          onChange={onInputChange} //points to HandleSearchInput
+        />
+
+       { <button        
+           type="button"
+           className="btn btn-primary" 
+           disabled={!value}
+           onClick={onClick} //points to handleSearchSubmit
+        >
+           Search
+       </button> }
+      </>
+    );
+
  };
 
 
