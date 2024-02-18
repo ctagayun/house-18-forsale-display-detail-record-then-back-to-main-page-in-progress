@@ -435,8 +435,8 @@ const handleSearchSubmit = () => {  //CC
   const handleAddHouse = (item) => { 
     dispatchStories({
       type: 'ADD_HOUSE',  //TYPE
-      payload: [...searchedStories, //contains the searchedHouses state
-      {                         //the below records will be appended to the end of ...houses
+      payload: [...searchedStories, //contains the searchedHouses stories
+      {                             //the below records will be appended to the end of ...houses
         objectID: 9,
         address: "1456 Riverside Road",
         country: "USA",
@@ -458,15 +458,7 @@ const handleSearchSubmit = () => {  //CC
     <div>
       <Header  headerText={welcome} /> 
 
-      <Search 
-       id="search"
-       value={searchTerm}
-       isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
-       onInputChange={handleSearch}  
-       onClick={handleSearchSubmit} 
-      >
-      <strong>Search:</strong>
-      </Search>
+      
       <hr />
 
       {stories.isError && <p>Something went wrong ...</p>}
@@ -476,11 +468,23 @@ const handleSearchSubmit = () => {  //CC
 
       {selectedHouse ? (
           <HouseDetail house={selectedHouse} />  //if truthy display detail
-        ) : (                      
+        ) : ( 
+           <>  
+           <Search 
+              id="search"
+              value={searchTerm}
+              isFocused //pass imperatively a dedicated  prop. isFocused as an attribute is equivalent to isFocused={true}
+              onInputChange={handleSearch}  
+              onClick={handleSearchSubmit} 
+              >
+          <strong>Search:</strong>
+          </Search>
           <HouseList list={searchedStories} //if falsy display HouseList
                       onRemoveHouse={handleRemoveStory} 
                       onAddHouse={handleAddHouse} 
-                      selectedHouseSetter= {setSelectedHouse}/>  //State
+                      selectedHouseSetter= {setSelectedHouse}/>  
+          </>
+                      
         )}
 
     </div>

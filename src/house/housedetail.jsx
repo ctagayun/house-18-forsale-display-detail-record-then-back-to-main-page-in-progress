@@ -10,9 +10,10 @@ const HouseDetail = ({ house }) => {
   const myHouse = JSON.stringify(house);
   console.log("House Detail house Props = " + myHouse);
   return (
-    <div className="row">
-      <div className="col-6">
-        <div className="row">
+    <div>
+      <div className="row">
+        <div className="col-6">
+         <div className="row">
           <img
             className="img-fluid"
             src={
@@ -21,8 +22,8 @@ const HouseDetail = ({ house }) => {
             alt="House pic"
           />
         </div>
-      </div>
-      <div className="col-6">
+        </div>
+        <div className="col-6">
         <div className="row mt-2">
           <h5 className="col-12">{house.country}</h5>
         </div>
@@ -37,8 +38,21 @@ const HouseDetail = ({ house }) => {
         <div className="row">
           <div className="col-12 mt-3">{house.description}</div>
         </div>
-      </div>
+        </div>
+
+       <div className="row">
+       </div>
+       <div className="row">
+          <div className="col-1">
+          <button className="btn btn-success btn-sm float-right" type="btn">
+                Cancel 
+          </button>
+         </div>  
+       </div>
     </div>
+      
+    </div>
+    
   );
 };
 
