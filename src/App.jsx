@@ -455,7 +455,8 @@ const handleSearchSubmit = () => {  //CC
   }
    
   const onSelectHouse = (event) => {
-    alert('td clicked ');
+    //var myVal = e.target || window.event.target;
+    alert('td clicked');
     event.stopPropagation();
   };
 
