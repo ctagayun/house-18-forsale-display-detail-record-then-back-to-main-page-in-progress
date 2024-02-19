@@ -45,7 +45,7 @@ const HouseDetail = ({ house, onClick }) => {
        <div className="row">
           <div className="col-1">
           <button className="btn btn-success btn-sm float-right"
-              type="btn" onClick="onClick">
+              type="btn" >
                 Cancel 
           </button>
          </div>  

@@ -67,7 +67,9 @@ const HouseList = ({list, onRemoveHouse, onAddHouse, onSelectHouse, selectedHous
                       onRemoveItem = {onRemoveHouse} //contains the onRemoveItem handler
                       onAddHouse = {onAddHouse}
                       onSelectHouse={onSelectHouse}
-                      selectedHouseSetter = {selectedHouseSetter} //pass to HouseRow the selected record
+                      selectedHouseSetter = {selectedHouseSetter} //points to the wrapper function
+                                                    //setSelectedHouseWrapper which wrapped
+                                                    //setSelectedHouse
                   />
                 ))}
               </tbody>

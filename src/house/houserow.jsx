@@ -19,15 +19,22 @@ import currencyFormatter from "../helpers/currencyFormatter";
    </button>
  
   */
-const HouseRow = ({house, onRemoveItem, onSelectHouse, selectedHouseSetter}) => (
+const HouseRow = ({house, onRemoveItem, selectHouse, selectedHouseSetter}) => (
     //selectedHouseSetter is the updater function. When a row 
-    //in the table is clicked this function updates the state
-    //defined in app.jsx const [selectedHouse, setSelectedHouse] = React.useState();
-    //<tr onClick={() => selectedHouseSetter(house)}> 
-    // <td onClick={() => onSelectHouse(house.objectID)}> {house.objectID} </td>
+    //in the table is clicked this HouseRow calls the "Callback" wrapper 
+    //function defined in app.jsx     
+    // const setSelectedHouseWrapper = (house) => {
+    //    setSelectedHouse(house); <= updates the state in line 473
+    //   }
+    
+
+    //but is now pointing to: setSelectedHouseWrapper() callback function 
+    //in App.JS to preserve state in app.JS
 
     <tr> 
-     <td onClick={() => selectedHouseSetter(house)}> {house.objectID} </td>
+     <td onClick={() => selectedHouseSetter(house)}> 
+         <a>{house.objectID} </a> 
+      </td>  
      <td>{house.address}</td>
      <td>{house.country}</td>
     

@@ -2,7 +2,11 @@
 
 For this project checkout:
    House-10-forsale, House-12-forsale, House-17
-Concepts to Remember:
+
+   Link to Calback hook PS
+   https://app.pluralsight.com/ilx/video-courses/9a3771fa-626e-4708-8634-c49cc8616922/2e8c1f61-a9fa-48be-9e6c-4636fc0e17e1/66ac2d4c-a9cf-45e6-a3d5-b918b662cf47
+
+   Concepts to Remember:
      Visit this link for the detailed explanation when useEffect fires:
 
      https://app.pluralsight.com/ilx/video-courses/9a3771fa-626e-4708-8634-c49cc8616922/4b5d269c-f9d9-4c3e-9806-ce1374a69d83/e36f10bb-acb4-4470-ae9e-285eb9031758    
@@ -363,7 +367,7 @@ const storiesReducer = (state, action) => {
 // App section
 /===============================================*/
 const App = () => {
- 
+  console.log("App component fires");
   const [searchTerm, setSearchTerm] =  useStorageState ( //<-- custom hook
     'search', //key
     '',  //Initial state
@@ -427,10 +431,7 @@ const handleSearchSubmit = () => {  //CC
     story.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  //Introduce another state for displaying HouseDetail.
-  //I am not passing initial value that means selectedHouse 
-  //will be initiall undefined.
-  const [selectedHouse, setSelectedHouse] = React.useState(); 
+ 
 
   const handleAddHouse = (item) => { 
     dispatchStories({
@@ -460,7 +461,55 @@ const handleSearchSubmit = () => {  //CC
     event.stopPropagation();
   };
 
+  /*========================================================
+  // Implementation of use case: user clicks on 
+  // HouseList row and displays HouseDetail component
+  // and then want to be able to go back to the HouseList
+  // displayed earlier
+  ==========================================================*/
+  //Introduce another state for displaying HouseDetail.
+  //I am not passing initial value that means selectedHouse 
+  //will be initiall undefined.
+  const [selectedHouse, setSelectedHouse] = React.useState(); 
+
+   //https://app.pluralsight.com/ilx/video-courses/9a3771fa-626e-4708-8634-c49cc8616922/2e8c1f61-a9fa-48be-9e6c-4636fc0e17e1/66ac2d4c-a9cf-45e6-a3d5-b918b662cf47
+  
+   
+   //This is a callback function that needs to be passed
+   //to HouseList. This callback function is called when a HouseRow
+   //is selected thereby updating the selectedHouse state in line 473
+
+   //Things to watch:
+   //  1.Function is re-created oneach re-render ceating a new
+   //reference.
+   //  2. Watch out with memoized components
+   //  3. Watch out if the function is in a dependency array
+   //of a useEffect for example. The effect's function will 
+   //execute.
+   //  To prevent the above wrap the function in a useCallback
+   //hook if needed. or Memoized the the contained function.
+
+   // Example setSelectedHouseWrapper with CallBack Hook.
+   //Works the same as useMemo
+   const setSelectedHouseWrapper = useCallback((house) => {
+       setSelectedHouse(house);
+       console.log("App component setSelectedHouseWrapper fires");
+       const myHouse = JSON.stringify(house);
+       console.log("MyHouse = " + myHouse);
+   
+     },[]);
+
+ // Example setSelectedHouseWrapper with no useCallback hook
+ /* const setSelectedHouseWrapper = (house) => {
+    console.log("App component setSelectedHouseWrapper fires");
+    const myHouse = JSON.stringify(house);
+    console.log("MyHouse = " + myHouse);
+    setSelectedHouse(house);
+  } */
+
   return (
+    
+
     <div>
       <Header  headerText={welcome} /> 
 
@@ -468,9 +517,7 @@ const handleSearchSubmit = () => {  //CC
       <hr />
 
       {stories.isError && <p>Something went wrong ...</p>}
-
       {stories.isLoading && <p>Loading ...</p> }
-     
 
       {selectedHouse ? (
           <HouseDetail house={selectedHouse} />  //if truthy display detail
@@ -485,11 +532,17 @@ const handleSearchSubmit = () => {  //CC
               >
           <strong>Search:</strong>
           </Search>
-          <HouseList list={searchedStories} //if falsy display HouseList
+          <HouseList list={searchedStories} //HouseList and its rows (HouseRow) get
+                                     //searchedStories via prop. By doing this we are
+                                     //giving full control to this HouseList and
+                                     //HouseRow child components
                       onRemoveHouse={handleRemoveStory} 
                       onAddHouse={handleAddHouse} 
                       onSelectHouse={onSelectHouse}
-                      selectedHouseSetter= {setSelectedHouse}/>  
+                      selectedHouseSetter= {setSelectedHouseWrapper}// replace SetSelectedHouse 
+                                                                    //with the wrapper function 
+            /> 
+                                           
           </>
                       
         )}
