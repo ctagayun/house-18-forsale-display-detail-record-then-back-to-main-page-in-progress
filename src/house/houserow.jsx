@@ -24,8 +24,10 @@ const HouseRow = ({house, onRemoveItem, onSelectHouse, selectedHouseSetter}) => 
     //in the table is clicked this function updates the state
     //defined in app.jsx const [selectedHouse, setSelectedHouse] = React.useState();
     //<tr onClick={() => selectedHouseSetter(house)}> 
+    // <td onClick={() => onSelectHouse(house.objectID)}> {house.objectID} </td>
+
     <tr> 
-     <td onClick={() => onSelectHouse(house.objectID)}> {house.objectID} </td>
+     <td onClick={() => selectedHouseSetter(house)}> {house.objectID} </td>
      <td>{house.address}</td>
      <td>{house.country}</td>
     
