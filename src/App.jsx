@@ -205,7 +205,6 @@ import Header from "./header";
 import HouseList from './house/houseList';
 import Search from './house/search';
 import HouseDetail from '../src/house/housedetail';
-import UseHousesHook from "../hooks/useHousesHook";
 
 /*
       At the moment initialHouses is unstateful variable
@@ -488,32 +487,41 @@ const handleSearchSubmit = () => {  //CC
    //execute.
    //  To prevent the above wrap the function in a useCallback
    //hook if needed. or Memoized the the contained function.
+   //
+   //  The useCallback hook is a built-in hook in React that 
+   //lets you memoize a callback function by preventing it 
+   //from being recreated on every render. In simple terms, 
+   //it means that the callback function is cached and does 
+   //not get redefined on every render.
 
    // Example setSelectedHouseWrapper with CallBack Hook.
    //Works the same as useMemo
-   const setSelectedHouseWrapper = useCallback((house) => {
-       setSelectedHouse(house);
-       console.log("App component setSelectedHouseWrapper fires");
-       const myHouse = JSON.stringify(house);
-       console.log("MyHouse = " + myHouse);
+   //const setSelectedHouseWrapper = useCallback((house) => {
+   //    setSelectedHouse(house); //In thiscase the containing function 
+                                //will only be created when the
+                                //component is mounted. See line 502
+                                //For every re-render, the reference remains
+                                //the same.
+                                //
+    //   console.log("App component setSelectedHouseWrapper fires");
+    //   const myHouse = JSON.stringify(house);
+     //  console.log("MyHouse = " + myHouse);
    
-     },[]);
+   //  },[]); //when component is mounted  
 
  // Example setSelectedHouseWrapper with no useCallback hook
- /* const setSelectedHouseWrapper = (house) => {
+  const setSelectedHouseWrapper = (house) => {
     console.log("App component setSelectedHouseWrapper fires");
     const myHouse = JSON.stringify(house);
     console.log("MyHouse = " + myHouse);
     setSelectedHouse(house);
-  } */
+  } 
 
   return (
     
 
     <div>
       <Header  headerText={welcome} /> 
-
-      
       <hr />
 
       {stories.isError && <p>Something went wrong ...</p>}
